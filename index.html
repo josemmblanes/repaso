@@ -65,25 +65,6 @@
       border-bottom: 1px solid var(--border-color);
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    /* Counter badge */
-    .progress-counter {
-      background: var(--bg-main);
-      border: 1px solid var(--border-color);
-      color: var(--accent);
-      font-size: 0.8rem;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-family: monospace;
-      letter-spacing: 0.5px;
-    }
-
     h1 {
       font-size: 1.1rem;
       font-weight: 600;
@@ -150,7 +131,7 @@
       letter-spacing: 0.5px;
     }
 
-    select {
+    select, input {
       width: 100%;
       padding: 12px;
       background: var(--bg-main);
@@ -341,11 +322,10 @@
     }
 
     .btn-secondary {
-      flex: 1;
       background-color: var(--bg-element);
       color: var(--text-main);
-      padding: 12px;
-      font-size: 0.9rem;
+      padding: 10px;
+      font-size: 0.85rem;
     }
 
     .audio-controls {
@@ -358,18 +338,15 @@
       text-align: center;
       font-size: 0.75rem;
       color: var(--text-muted);
-      margin-top: 4px;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Encabezado con Contador de Progreso y Botón de Configuración -->
+  <!-- Encabezado con Botón de Configuración -->
   <header>
-    <div class="header-left">
-      <span class="progress-counter" id="progress-counter" title="Palabras repasadas / Total filtrado">0/0</span>
-      <div id="mode-title" style="font-weight: bold;">听力 (Escucha)</div>
-    </div>
+    <div id="mode-title" style="font-weight: bold;">听力 (Escucha)</div>
     <button class="btn-icon" onclick="toggleModal(true)">⚙️</button>
   </header>
 
@@ -399,7 +376,7 @@
         👁️ Mostrar Respuesta
       </button>
 
-      <!-- Botones de Audio siempre disponibles -->
+      <!-- Botones de Audio e Interacción rápida -->
       <div class="audio-controls">
         <button class="btn btn-secondary" onclick="playAudio(1.0)">🔊 Audio</button>
         <button class="btn btn-secondary" onclick="playAudio(0.75)">🐢 Lento (0.75x)</button>
@@ -494,7 +471,6 @@
       document.getElementById('mode-kouyu').classList.toggle('active', mode === 'kouyu');
       document.getElementById('mode-title').innerText = mode === 'tingli' ? '听力 (Escucha)' : '口语 (Pronunciación)';
       saveStateToStorage();
-      updateCounter();
       nextCard();
     }
 
@@ -526,10 +502,9 @@
         vocabulary = Array.isArray(data) ? data : (data.words || data.vocabulario || []);
 
         populateTopicsSelect();
-        updateCounter();
         nextCard();
       } catch (err) {
-        alert("Error cargando los datos del curso: " + err.message);
+        alert("Error cargando los datos del curso. Asegúrate de servir la app mediante servidor web local (ej. python3 -m http.server): " + err.message);
       }
     }
 
@@ -537,6 +512,7 @@
       const selectTopic = document.getElementById('select-topic');
       selectTopic.innerHTML = '<option value="ALL">Todos los temas</option>';
 
+      // Extraer temas/lecciones únicas si existen en el JSON
       const topics = new Set();
       vocabulary.forEach(item => {
         if (item.topic) topics.add(item.topic);
@@ -564,33 +540,15 @@
     function onTopicChange() {
       currentTopic = document.getElementById('select-topic').value;
       saveStateToStorage();
-      updateCounter();
       nextCard();
     }
 
+    // Algoritmo de selección ponderado según la caja de dominio
     function getFilteredVocabulary() {
       return vocabulary.filter(item => {
         if (currentTopic === 'ALL') return true;
         return (item.topic === currentTopic || item.tema === currentTopic || item.lesson === currentTopic);
       });
-    }
-
-    // Actualiza el contador de la esquina (ej. 23/150)
-    function updateCounter() {
-      const pool = getFilteredVocabulary();
-      const total = pool.length;
-
-      // Contar cuántas palabras del filtro actual tienen registro en el modo activo
-      let reviewedCount = 0;
-      pool.forEach(word => {
-        const wordKey = word.hanzi || word.word;
-        const key = `${currentMode}_${wordKey}`;
-        if (progressData[key] !== undefined) {
-          reviewedCount++;
-        }
-      });
-
-      document.getElementById('progress-counter').innerText = `${reviewedCount}/${total}`;
     }
 
     function nextCard() {
@@ -600,7 +558,7 @@
         return;
       }
 
-      // Algoritmo de pesos basados en el nivel de dominio (Caja Leitner)
+      // Elegir palabra aleatoria con peso basado en errores (Caja Leitner 0 a 5)
       const weights = pool.map(word => {
         const key = `${currentMode}_${word.hanzi || word.word}`;
         const box = progressData[key] || 0;
@@ -662,8 +620,10 @@
       meaningDisplay.innerText = meaningStr;
 
       if (currentMode === 'tingli') {
+        // En escucha: Ocultamos el hanzi hasta revelar
         hanziContainer.innerHTML = isRevealed ? renderColoredHanzi(wordStr, pinyinStr) : '<span class="hidden-placeholder">?</span>';
       } else {
+        // En pronunciación: Mostramos el hanzi desde el inicio
         hanziContainer.innerHTML = renderColoredHanzi(wordStr, pinyinStr);
       }
 
@@ -685,7 +645,7 @@
     function playAudio(speed = 1.0) {
       if (!currentWord) return;
       const hanziStr = currentWord.hanzi || currentWord.word;
-      const cleanHanzi = hanziStr.replace(/\(.*?\)/g, ''); // Quitar paréntesis opcionales
+      const cleanHanzi = hanziStr.replace(/\(.*?\)/g, ''); // Quitar paréntesis
       const level = currentWord.level || currentCourse;
 
       const audioPath = `audios/${level}/${cleanHanzi}.mp3`;
@@ -697,7 +657,7 @@
       audioObject = new Audio(audioPath);
       audioObject.playbackRate = speed;
       audioObject.play().catch(e => {
-        console.warn("No se pudo reproducir el audio:", e);
+        console.warn("No se pudo auto-reproducir el audio:", e);
       });
     }
 
@@ -709,11 +669,10 @@
       if (isCorrect) {
         progressData[key] = Math.min(5, currentBox + 1);
       } else {
-        progressData[key] = 0; // Reiniciar avance en caso de error
+        progressData[key] = 0; // Reiniciar a 0 en fallo
       }
 
       localStorage.setItem('hsk_progress_v2', JSON.stringify(progressData));
-      updateCounter();
       nextCard();
     }
 
@@ -745,9 +704,11 @@
           return;
         }
         if (diffX > 0) {
-          answer(true);  // Swipe Derecha -> Acerté
+          // Swipe Derecha -> Acerté
+          answer(true);
         } else {
-          answer(false); // Swipe Izquierda -> Fallé
+          // Swipe Izquierda -> Fallé
+          answer(false);
         }
       }
     }
