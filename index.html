@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Repaso HSK - 听力 & 口语</title>
+  
+  <!-- Estilos e Integración PWA/iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1e293b">
+
+  <style>
+    :root {
+      /* Paleta Sobria y Elegante (Gris Pizarra / Slate) */
+      --bg-main: #0f172a;
+      --bg-card: #1e293b;
+      --bg-element: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #475569;
+      --accent: #38bdf8;
+      --success: #22c55e;
+      --danger: #ef4444;
+
+      /* Colores para los Tonos de los Hanzi */
+      --tone-1: #ef4444; /* Rojo */
+      --tone-2: #e3a000; /* Amarillo Ámbar / Papaya */
+      --tone-3: #22c55e; /* Verde */
+      --tone-4: #3b82f6; /* Azul */
+      --tone-0: #94a3b8; /* Neutro */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      display: flex;
+      flex-direction: column;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      overflow: hidden;
+    }
+
+    /* Encabezado */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background-color: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    .btn-icon:active {
+      background-color: var(--bg-element);
+    }
+
+    /* Modal de Ajustes / Filtros */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: var(--bg-card);
+      width: 100%;
+      max-width: 500px;
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    /* Toggle Switches / Segmented Control */
+    .segmented-control {
+      display: flex;
+      background: var(--bg-main);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .segmented-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .segmented-btn.active {
+      background: var(--bg-element);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* Área Principal / Tarjeta */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+    }
+
+    .card-container {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 1 / 1.15;
+      perspective: 1000px;
+      touch-action: pan-y;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      position: relative;
+    }
+
+    /* Cuadrícula Mi Zi Ge (米字格) */
+    .mizige {
+      width: 160px;
+      height: 160px;
+      border: 2px solid var(--border-color);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(45deg, transparent 49.5%, rgba(255,255,255,0.05) 49.5%, rgba(255,255,255,0.05) 50.5%, transparent 50.5%),
+        linear-gradient(-45deg, transparent 49.5%, rgba(255,255,255,0.05) 49.5%, rgba(255,255,255,0.05) 50.5%, transparent 50.5%);
+      background-size: 100% 100%;
+      border-radius: 12px;
+      margin: auto 0;
+    }
+
+    .hanzi-display {
+      font-family: "Kaiti SC", "STKaiti", "SimKai", serif;
+      font-size: 4.5rem;
+      line-height: 1;
+      display: flex;
+    }
+
+    /* Colores por Tono */
+    .tone-1 { color: var(--tone-1); }
+    .tone-2 { color: var(--tone-2); }
+    .tone-3 { color: var(--tone-3); }
+    .tone-4 { color: var(--tone-4); }
+    .tone-0 { color: var(--tone-0); }
+
+    .hidden-placeholder {
+      font-size: 3rem;
+      color: var(--text-muted);
+      opacity: 0.4;
+    }
+
+    .card-info {
+      text-align: center;
+      width: 100%;
+      min-height: 70px;
+    }
+
+    .pinyin {
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .meaning {
+      font-size: 1rem;
+      color: var(--text-main);
+      opacity: 0.9;
+    }
+
+    .tag-course {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg-main);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    /* Botones de Acción para iPhone / Táctil */
+    .action-bar {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-reveal {
+      background-color: var(--accent);
+      color: #0f172a;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-fail {
+      flex: 1;
+      background-color: var(--danger);
+    }
+
+    .btn-success {
+      flex: 1;
+      background-color: var(--success);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-element);
+      color: var(--text-main);
+      padding: 10px;
+      font-size: 0.85rem;
+    }
+
+    .audio-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .hint-swipe {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Encabezado con Botón de Configuración -->
+  <header>
+    <div id="mode-title" style="font-weight: bold;">听力 (Escucha)</div>
+    <button class="btn-icon" onclick="toggleModal(true)">⚙️</button>
+  </header>
+
+  <!-- Principal: Área de Estudio -->
+  <main>
+    <div class="card-container" id="card-container">
+      <div class="card" id="card">
+        <span class="tag-course" id="card-course">--</span>
+        
+        <div class="mizige">
+          <div id="hanzi-container" class="hanzi-display">
+            <span class="hidden-placeholder">?</span>
+          </div>
+        </div>
+
+        <div class="card-info">
+          <div id="pinyin-display" class="pinyin" style="visibility: hidden;">--</div>
+          <div id="meaning-display" class="meaning" style="visibility: hidden;">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Controles Táctiles -->
+    <div class="action-bar">
+      <!-- Botón inicial de Revelar -->
+      <button id="btn-reveal" class="btn btn-reveal" onclick="revealCard()">
+        👁️ Mostrar Respuesta
+      </button>
+
+      <!-- Botones de Audio e Interacción rápida -->
+      <div class="audio-controls">
+        <button class="btn btn-secondary" onclick="playAudio(1.0)">🔊 Audio</button>
+        <button class="btn btn-secondary" onclick="playAudio(0.75)">🐢 Lento (0.75x)</button>
+      </div>
+
+      <!-- Botones Acerté / Fallé (ocultos hasta revelar) -->
+      <div id="feedback-buttons" class="btn-group" style="display: none;">
+        <button class="btn btn-fail" onclick="answer(false)">❌ Fallé</button>
+        <button class="btn btn-success" onclick="answer(true)">✅ Acerté</button>
+      </div>
+
+      <div class="hint-swipe">💡 Puedes deslizar ⬅️ Fallé | Acerté ➡️</div>
+    </div>
+  </main>
+
+  <!-- Modal de Ajustes (Selección de Curso y Tema) -->
+  <div class="modal" id="modal-settings">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Ajustes y Filtros</h2>
+        <button class="btn-icon" onclick="toggleModal(false)">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label>Modo de Estudio</label>
+        <div class="segmented-control">
+          <button id="mode-tingli" class="segmented-btn active" onclick="setMode('tingli')">听力 (Escucha)</button>
+          <button id="mode-kouyu" class="segmented-btn" onclick="setMode('kouyu')">口语 (Pronunciación)</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Curso</label>
+        <select id="select-course" onchange="onCourseChange()">
+          <option value="HSK1">1.º Curso (HSK1.json)</option>
+          <option value="HSK2">2.º Curso (HSK2.json)</option>
+          <option value="HSK3_1">3.º Curso (HSK3_1.json)</option>
+          <option value="HSK3_2">4.º Curso (HSK3_2.json)</option>
+          <option value="HSK4_1">5.º Curso (HSK4_1.json)</option>
+          <option value="HSK4_2">6.º Curso (HSK4_2.json)</option>
+          <option value="HSK4_3">7.º Curso (HSK4_3.json)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Tema / Lección</label>
+        <select id="select-topic" onchange="onTopicChange()">
+          <option value="ALL">Todos los temas</option>
+        </select>
+      </div>
+
+      <button class="btn btn-reveal" style="width: 100%;" onclick="toggleModal(false)">Aplicar y Repasar</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Estado Global ---
+    let currentMode = 'tingli'; // 'tingli' (Escucha) o 'kouyu' (Pronunciación)
+    let currentCourse = 'HSK1';
+    let currentTopic = 'ALL';
+    
+    let vocabulary = [];
+    let currentWord = null;
+    let isRevealed = false;
+    let audioObject = null;
+
+    // Persistencia / Progreso (Leitner Boxes)
+    let progressData = JSON.parse(localStorage.getItem('hsk_progress_v2') || '{}');
+
+    // Mapeo de Tonos Pinyin -> Colores
+    const toneRegexMap = [
+      { tone: 1, regex: /[āēīōūǖĀĒĪŌŪǕ]/ },
+      { tone: 2, regex: /[áéíóúǘÁÉÍÓÚǗ]/ },
+      { tone: 3, regex: /[ǎěǐǒǔǚǍĚǏǑǓǙ]/ },
+      { tone: 4, regex: /[àèìòùǜÀÈÌÒÙǛ]/ }
+    ];
+
+    // Carga inicial
+    window.onload = () => {
+      loadStateFromStorage();
+      loadCourseData(currentCourse);
+      setupSwipeEvents();
+    };
+
+    function toggleModal(show) {
+      document.getElementById('modal-settings').classList.toggle('open', show);
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('mode-tingli').classList.toggle('active', mode === 'tingli');
+      document.getElementById('mode-kouyu').classList.toggle('active', mode === 'kouyu');
+      document.getElementById('mode-title').innerText = mode === 'tingli' ? '听力 (Escucha)' : '口语 (Pronunciación)';
+      saveStateToStorage();
+      nextCard();
+    }
+
+    function loadStateFromStorage() {
+      const saved = JSON.parse(localStorage.getItem('hsk_app_settings') || '{}');
+      if (saved.course) currentCourse = saved.course;
+      if (saved.mode) currentMode = saved.mode;
+      if (saved.topic) currentTopic = saved.topic;
+
+      document.getElementById('select-course').value = currentCourse;
+      setMode(currentMode);
+    }
+
+    function saveStateToStorage() {
+      localStorage.setItem('hsk_app_settings', JSON.stringify({
+        course: currentCourse,
+        mode: currentMode,
+        topic: currentTopic
+      }));
+    }
+
+    // Cargar JSON de datos según el Curso
+    async function loadCourseData(courseKey) {
+      try {
+        const response = await fetch(`data/${courseKey}.json`);
+        if (!response.ok) throw new Error("No se pudo cargar el archivo data/" + courseKey + ".json");
+        const data = await response.json();
+        
+        vocabulary = Array.isArray(data) ? data : (data.words || data.vocabulario || []);
+
+        populateTopicsSelect();
+        nextCard();
+      } catch (err) {
+        alert("Error cargando los datos del curso. Asegúrate de servir la app mediante servidor web local (ej. python3 -m http.server): " + err.message);
+      }
+    }
+
+    function populateTopicsSelect() {
+      const selectTopic = document.getElementById('select-topic');
+      selectTopic.innerHTML = '<option value="ALL">Todos los temas</option>';
+
+      // Extraer temas/lecciones únicas si existen en el JSON
+      const topics = new Set();
+      vocabulary.forEach(item => {
+        if (item.topic) topics.add(item.topic);
+        else if (item.tema) topics.add(item.tema);
+        else if (item.lesson) topics.add(item.lesson);
+      });
+
+      topics.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        selectTopic.appendChild(opt);
+      });
+
+      selectTopic.value = currentTopic;
+    }
+
+    function onCourseChange() {
+      currentCourse = document.getElementById('select-course').value;
+      currentTopic = 'ALL';
+      saveStateToStorage();
+      loadCourseData(currentCourse);
+    }
+
+    function onTopicChange() {
+      currentTopic = document.getElementById('select-topic').value;
+      saveStateToStorage();
+      nextCard();
+    }
+
+    // Algoritmo de selección ponderado según la caja de dominio
+    function getFilteredVocabulary() {
+      return vocabulary.filter(item => {
+        if (currentTopic === 'ALL') return true;
+        return (item.topic === currentTopic || item.tema === currentTopic || item.lesson === currentTopic);
+      });
+    }
+
+    function nextCard() {
+      const pool = getFilteredVocabulary();
+      if (pool.length === 0) {
+        alert("No hay palabras disponibles para los filtros seleccionados.");
+        return;
+      }
+
+      // Elegir palabra aleatoria con peso basado en errores (Caja Leitner 0 a 5)
+      const weights = pool.map(word => {
+        const key = `${currentMode}_${word.hanzi || word.word}`;
+        const box = progressData[key] || 0;
+        return Math.max(1, 6 - box); // Mayor peso a menor nivel de dominio
+      });
+
+      const totalWeight = weights.reduce((a, b) => a + b, 0);
+      let random = Math.random() * totalWeight;
+      let selectedIndex = 0;
+
+      for (let i = 0; i < weights.length; i++) {
+        if (random < weights[i]) {
+          selectedIndex = i;
+          break;
+        }
+        random -= weights[i];
+      }
+
+      currentWord = pool[selectedIndex];
+      isRevealed = false;
+      renderCard();
+
+      if (currentMode === 'tingli') {
+        playAudio(1.0);
+      }
+    }
+
+    function getToneClass(pinyinSyllable) {
+      for (const t of toneRegexMap) {
+        if (t.regex.test(pinyinSyllable)) return `tone-${t.tone}`;
+      }
+      return 'tone-0';
+    }
+
+    function renderColoredHanzi(hanzi, pinyin) {
+      if (!hanzi) return '';
+      const chars = hanzi.split('');
+      const pinyinSyllables = pinyin ? pinyin.split(' ') : [];
+
+      return chars.map((char, i) => {
+        const syllable = pinyinSyllables[i] || '';
+        const toneClass = getToneClass(syllable);
+        return `<span class="${toneClass}">${char}</span>`;
+      }).join('');
+    }
+
+    function renderCard() {
+      const hanziContainer = document.getElementById('hanzi-container');
+      const pinyinDisplay = document.getElementById('pinyin-display');
+      const meaningDisplay = document.getElementById('meaning-display');
+      const courseTag = document.getElementById('card-course');
+
+      const wordStr = currentWord.hanzi || currentWord.word;
+      const pinyinStr = currentWord.pinyin || '';
+      const meaningStr = currentWord.meaning || currentWord.spanish || currentWord.significado || '';
+
+      courseTag.innerText = currentWord.level || currentCourse;
+      pinyinDisplay.innerText = pinyinStr;
+      meaningDisplay.innerText = meaningStr;
+
+      if (currentMode === 'tingli') {
+        // En escucha: Ocultamos el hanzi hasta revelar
+        hanziContainer.innerHTML = isRevealed ? renderColoredHanzi(wordStr, pinyinStr) : '<span class="hidden-placeholder">?</span>';
+      } else {
+        // En pronunciación: Mostramos el hanzi desde el inicio
+        hanziContainer.innerHTML = renderColoredHanzi(wordStr, pinyinStr);
+      }
+
+      pinyinDisplay.style.visibility = isRevealed ? 'visible' : 'hidden';
+      meaningDisplay.style.visibility = isRevealed ? 'visible' : 'hidden';
+
+      document.getElementById('btn-reveal').style.display = isRevealed ? 'none' : 'flex';
+      document.getElementById('feedback-buttons').style.display = isRevealed ? 'flex' : 'none';
+    }
+
+    function revealCard() {
+      isRevealed = true;
+      renderCard();
+      if (currentMode === 'kouyu') {
+        playAudio(1.0);
+      }
+    }
+
+    function playAudio(speed = 1.0) {
+      if (!currentWord) return;
+      const hanziStr = currentWord.hanzi || currentWord.word;
+      const cleanHanzi = hanziStr.replace(/\(.*?\)/g, ''); // Quitar paréntesis
+      const level = currentWord.level || currentCourse;
+
+      const audioPath = `audios/${level}/${cleanHanzi}.mp3`;
+
+      if (audioObject) {
+        audioObject.pause();
+      }
+
+      audioObject = new Audio(audioPath);
+      audioObject.playbackRate = speed;
+      audioObject.play().catch(e => {
+        console.warn("No se pudo auto-reproducir el audio:", e);
+      });
+    }
+
+    function answer(isCorrect) {
+      if (!currentWord) return;
+      const key = `${currentMode}_${currentWord.hanzi || currentWord.word}`;
+      let currentBox = progressData[key] || 0;
+
+      if (isCorrect) {
+        progressData[key] = Math.min(5, currentBox + 1);
+      } else {
+        progressData[key] = 0; // Reiniciar a 0 en fallo
+      }
+
+      localStorage.setItem('hsk_progress_v2', JSON.stringify(progressData));
+      nextCard();
+    }
+
+    // --- Soporte de Gestos Táctiles (Swipe) ---
+    function setupSwipeEvents() {
+      const cardContainer = document.getElementById('card-container');
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      cardContainer.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      cardContainer.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        handleSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
+      }, { passive: true });
+    }
+
+    function handleSwipe(startX, startY, endX, endY) {
+      const diffX = endX - startX;
+      const diffY = endY - startY;
+
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        if (!isRevealed) {
+          revealCard();
+          return;
+        }
+        if (diffX > 0) {
+          // Swipe Derecha -> Acerté
+          answer(true);
+        } else {
+          // Swipe Izquierda -> Fallé
+          answer(false);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
