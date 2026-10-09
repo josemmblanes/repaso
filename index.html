@@ -27,8 +27,8 @@ header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
 h1{font-size:1.25rem;font-weight:500;margin:0}
 h1 span{font-style:italic;color:var(--mute);font-weight:400}
 .link{background:none;border:none;font:inherit;font-size:.95rem;color:var(--mute);text-decoration:underline;cursor:pointer;padding:8px 0 8px 12px}
-.legend{display:flex;gap:12px;font-size:.82rem;color:var(--mute);margin:8px 0 12px;flex-wrap:wrap}
-.legend i{font-family:var(--han);font-style:normal;font-weight:700;font-size:1rem;margin-right:2px}
+.legend{display:flex;justify-content:space-between;font-size:1rem;margin:10px 0 14px;padding:0 2px}
+.legend span{font-weight:600}
 .t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}.t0{color:var(--t0)}
 #modes{display:grid;grid-template-columns:1fr 1fr;margin-bottom:10px}
 .chip{font:inherit;font-size:1rem;background:transparent;border:1px solid var(--line);color:var(--mute);min-height:46px;padding:8px;cursor:pointer;border-radius:0}
@@ -48,15 +48,16 @@ select:disabled{opacity:.5}
 .opts input{width:22px;height:22px;accent-color:var(--ink)}
 .opts .link{padding-left:0}
 .sheet{flex:1;background:var(--sheet);border:1px solid var(--line);padding:22px 14px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:340px}
-.cells{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
-.cell{width:var(--s,140px);height:var(--s,140px);border:1px solid var(--mute);display:grid;place-items:center;
+.cells{display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:nowrap;width:100%}
+.cell{flex:none;width:var(--s,140px);height:var(--s,140px);border:1px solid var(--mute);display:grid;place-items:center;
   font:700 calc(var(--s,140px)*.68)/1 var(--han);
   background:
    linear-gradient(to right,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0),
    linear-gradient(to bottom,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0),
    linear-gradient(to top right,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0),
    linear-gradient(to bottom right,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0)}
-.extra{font-family:var(--han);font-size:1.3rem;color:var(--mute)}
+.extra{flex:none;width:calc(var(--s,140px)*.2);text-align:center;font:300 calc(var(--s,140px)*.5)/1 var(--serif);color:var(--mute)}
+.cells .msgbox{font-size:1rem;color:var(--mute);text-align:center;white-space:normal}
 #spk{width:68px;height:68px;border-radius:50%;border:1px solid var(--ink);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;margin:14px 0 4px}
 #spk:active{background:var(--ink);color:var(--sheet)}
 #spk[hidden]{display:none}
@@ -84,7 +85,7 @@ select:disabled{opacity:.5}
     <button class="link" id="gear" aria-expanded="false">Ajustes</button>
   </header>
   <div class="legend" aria-label="Código de tonos">
-    <span><i class="t1">一</i>1.º</span><span><i class="t2">二</i>2.º</span><span><i class="t3">三</i>3.º</span><span><i class="t4">四</i>4.º</span><span><i class="t0">五</i>neutro</span>
+    <span class="t1">mā</span><span class="t2">má</span><span class="t3">mǎ</span><span class="t4">mà</span><span class="t0">ma</span>
   </div>
   <div class="opts" id="opts" hidden>
     <label><input type="checkbox" id="slow"> Audio lento (0,75×)</label>
@@ -139,7 +140,7 @@ async function load(){
       }
     }catch(e){}
   }
-  if(!words.length){$('cells').innerHTML='<p class="extra">No se pudieron cargar los datos.<br>Comprueba la carpeta <b>data/</b> y que abres la app desde un servidor.</p>';return}
+  if(!words.length){$('cells').innerHTML='<p class="msgbox">No se pudieron cargar los datos.<br>Comprueba la carpeta <b>data/</b> y que abres la app desde un servidor.</p>';return}
   if(S.course!=='all'&&!words.some(w=>w.refs.some(r=>r.f===S.course)))S.course='all';
   if(S.tema!=='all'&&!temasOf(S.course).some(t=>t[0]===S.tema))S.tema='all';
   $('auto').checked=S.auto;$('slow').checked=S.slow;
@@ -233,8 +234,8 @@ function render(){
   const w=byKey[S.cur];if(!w)return;
   const listen=S.mode==='listen',hide=listen&&!S.rev;
   const chars=[...w.hanzi],tn=tones(w.pinyin),han=chars.filter(c=>HAN.test(c)).length;
-  const avail=Math.min(innerWidth,760)-32-28-8;
-  const s=hide?120:Math.max(52,Math.min(140,Math.floor(avail/han)-6));
+  const extras=chars.length-han,avail=$('card').clientWidth-32;
+  const s=hide?120:Math.max(30,Math.min(140,Math.floor((avail-4*(chars.length-1))/(han+.2*extras))));
   $('cells').style.setProperty('--s',s+'px');
   let ti=0;
   $('cells').innerHTML=hide?'<div class="cell" style="color:var(--guide)">?</div>':chars.map(c=>HAN.test(c)?`<div class="cell ${TONE_CLS[tn[ti++]??0]}">${c}</div>`:`<span class="extra">${c}</span>`).join('');
