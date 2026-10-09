@@ -47,7 +47,7 @@ select:disabled{opacity:.5}
 .opts label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:.98rem}
 .opts input{width:22px;height:22px;accent-color:var(--ink)}
 .opts .link{padding-left:0}
-.sheet{flex:1;background:var(--sheet);border:1px solid var(--line);padding:22px 14px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:340px}
+.sheet{touch-action:pan-y;will-change:transform;flex:1;background:var(--sheet);border:1px solid var(--line);padding:22px 14px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:340px}
 .cells{display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:nowrap;width:100%}
 .cell{flex:none;width:var(--s,140px);height:var(--s,140px);border:1px solid var(--mute);display:grid;place-items:center;
   font:700 calc(var(--s,140px)*.68)/1 var(--han);
@@ -69,6 +69,7 @@ select:disabled{opacity:.5}
 .msg{color:var(--t1);font-size:.88rem;min-height:1.3em}
 .swipe,.keys{font-size:.78rem;color:var(--mute);margin-top:4px}
 .swipe{display:none}
+.swipe[hidden]{display:none!important}
 @media(hover:none){.keys{display:none}.swipe{display:block}}
 .bottom{position:sticky;bottom:0;background:var(--paper);padding:12px 0 calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}
 .btn{flex:1;font:inherit;font-size:1.05rem;min-height:56px;padding:0 14px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;border-radius:2px}
@@ -105,7 +106,7 @@ select:disabled{opacity:.5}
     </button>
     <div class="reveal" id="reveal"></div>
     <div class="msg" id="msg"></div>
-    <div class="swipe">Desliza ← fallé · acerté →</div>
+    <div class="swipe" id="swipe" hidden>Desliza ← fallé · acerté →</div>
     <div class="keys">Atajos: Espacio revelar / repetir · R audio · 1 o ← fallé · 2 o → acerté</div>
   </main>
   <div class="bottom" id="actions"></div>
@@ -239,7 +240,7 @@ function render(){
   $('cells').style.setProperty('--s',s+'px');
   let ti=0;
   $('cells').innerHTML=hide?'<div class="cell" style="color:var(--guide)">?</div>':chars.map(c=>HAN.test(c)?`<div class="cell ${TONE_CLS[tn[ti++]??0]}">${c}</div>`:`<span class="extra">${c}</span>`).join('');
-  $('spk').hidden=!(listen||S.rev);$('msg').textContent='';
+  $('spk').hidden=!(listen||S.rev);$('swipe').hidden=!S.rev;$('msg').textContent='';
   if(S.rev){
     const where=w.refs.map(r=>LABEL[r.f]+(r.tema?' · tema '+r.tema:'')).join(' / ');
     $('reveal').innerHTML=`<div class="py">${w.pinyin}</div><div class="mn">${w.meaning}</div><div class="meta">${w.level} · ${where}</div>`;
@@ -274,13 +275,25 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='2'||e.key==='ArrowRight')mark(true);
   else if(e.key==='r'||e.key==='R')play();
 });
-let tx=null,ty=null;
-$('card').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
-$('card').addEventListener('touchend',e=>{
+const card=$('card'),sw=$('swipe'),SWTXT='Desliza ← fallé · acerté →',TH=80;
+let tx=null,ty=null,drag=false;
+function resetCard(){card.style.transition='transform .2s';card.style.transform='';sw.textContent=SWTXT}
+card.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;drag=false;card.style.transition='none'},{passive:true});
+card.addEventListener('touchmove',e=>{
   if(tx==null||!S.rev)return;
-  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;tx=null;
-  if(Math.abs(dx)>90&&Math.abs(dy)<60)mark(dx>0);
+  const dx=e.touches[0].clientX-tx,dy=e.touches[0].clientY-ty;
+  if(!drag&&Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy))drag=true;
+  if(!drag)return;
+  card.style.transform=`translateX(${dx}px) rotate(${dx/45}deg)`;
+  sw.textContent=Math.abs(dx)>TH?(dx>0?'✓ Acerté':'✕ Fallé'):SWTXT;
 },{passive:true});
+card.addEventListener('touchend',e=>{
+  if(tx==null)return;
+  const dx=e.changedTouches[0].clientX-tx,go=drag&&S.rev&&Math.abs(dx)>TH;
+  tx=null;drag=false;resetCard();
+  if(go)mark(dx>0);
+},{passive:true});
+card.addEventListener('touchcancel',()=>{tx=null;drag=false;resetCard()},{passive:true});
 addEventListener('resize',()=>words.length&&render());
 load();
 </script>
