@@ -1,717 +1,287 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Repaso HSK - 听力 & 口语</title>
-  
-  <!-- Estilos e Integración PWA/iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#1e293b">
-
-  <style>
-    :root {
-      /* Paleta Sobria y Elegante (Gris Pizarra / Slate) */
-      --bg-main: #0f172a;
-      --bg-card: #1e293b;
-      --bg-element: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #475569;
-      --accent: #38bdf8;
-      --success: #22c55e;
-      --danger: #ef4444;
-
-      /* Colores para los Tonos de los Hanzi */
-      --tone-1: #ef4444; /* Rojo */
-      --tone-2: #e3a000; /* Amarillo Ámbar / Papaya */
-      --tone-3: #22c55e; /* Verde */
-      --tone-4: #3b82f6; /* Azul */
-      --tone-0: #94a3b8; /* Neutro */
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-      display: flex;
-      flex-direction: column;
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-      overflow: hidden;
-    }
-
-    /* Encabezado */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background-color: var(--bg-card);
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-icon {
-      background: none;
-      border: none;
-      color: var(--text-main);
-      font-size: 1.3rem;
-      cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 8px;
-    }
-
-    .btn-icon:active {
-      background-color: var(--bg-element);
-    }
-
-    /* Modal de Ajustes / Filtros */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 1000;
-      align-items: flex-end;
-      justify-content: center;
-    }
-
-    .modal.open {
-      display: flex;
-    }
-
-    .modal-content {
-      background-color: var(--bg-card);
-      width: 100%;
-      max-width: 500px;
-      border-radius: 20px 20px 0 0;
-      padding: 24px;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 12px;
-      background: var(--bg-main);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      color: var(--text-main);
-      font-size: 1rem;
-      outline: none;
-    }
-
-    /* Toggle Switches / Segmented Control */
-    .segmented-control {
-      display: flex;
-      background: var(--bg-main);
-      padding: 4px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-    }
-
-    .segmented-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      font-weight: 500;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .segmented-btn.active {
-      background: var(--bg-element);
-      color: var(--text-main);
-      font-weight: 600;
-    }
-
-    /* Área Principal / Tarjeta */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      position: relative;
-    }
-
-    .card-container {
-      width: 100%;
-      max-width: 360px;
-      aspect-ratio: 1 / 1.15;
-      perspective: 1000px;
-      touch-action: pan-y;
-    }
-
-    .card {
-      width: 100%;
-      height: 100%;
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 24px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      transition: transform 0.2s ease, opacity 0.2s ease;
-      position: relative;
-    }
-
-    /* Cuadrícula Mi Zi Ge (米字格) */
-    .mizige {
-      width: 160px;
-      height: 160px;
-      border: 2px solid var(--border-color);
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-image: 
-        linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(45deg, transparent 49.5%, rgba(255,255,255,0.05) 49.5%, rgba(255,255,255,0.05) 50.5%, transparent 50.5%),
-        linear-gradient(-45deg, transparent 49.5%, rgba(255,255,255,0.05) 49.5%, rgba(255,255,255,0.05) 50.5%, transparent 50.5%);
-      background-size: 100% 100%;
-      border-radius: 12px;
-      margin: auto 0;
-    }
-
-    .hanzi-display {
-      font-family: "Kaiti SC", "STKaiti", "SimKai", serif;
-      font-size: 4.5rem;
-      line-height: 1;
-      display: flex;
-    }
-
-    /* Colores por Tono */
-    .tone-1 { color: var(--tone-1); }
-    .tone-2 { color: var(--tone-2); }
-    .tone-3 { color: var(--tone-3); }
-    .tone-4 { color: var(--tone-4); }
-    .tone-0 { color: var(--tone-0); }
-
-    .hidden-placeholder {
-      font-size: 3rem;
-      color: var(--text-muted);
-      opacity: 0.4;
-    }
-
-    .card-info {
-      text-align: center;
-      width: 100%;
-      min-height: 70px;
-    }
-
-    .pinyin {
-      font-size: 1.3rem;
-      color: var(--accent);
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
-
-    .meaning {
-      font-size: 1rem;
-      color: var(--text-main);
-      opacity: 0.9;
-    }
-
-    .tag-course {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      background: var(--bg-main);
-      padding: 2px 8px;
-      border-radius: 12px;
-    }
-
-    /* Botones de Acción para iPhone / Táctil */
-    .action-bar {
-      width: 100%;
-      max-width: 360px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .btn {
-      padding: 16px;
-      border: none;
-      border-radius: 14px;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #fff;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-reveal {
-      background-color: var(--accent);
-      color: #0f172a;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 12px;
-    }
-
-    .btn-fail {
-      flex: 1;
-      background-color: var(--danger);
-    }
-
-    .btn-success {
-      flex: 1;
-      background-color: var(--success);
-    }
-
-    .btn-secondary {
-      background-color: var(--bg-element);
-      color: var(--text-main);
-      padding: 10px;
-      font-size: 0.85rem;
-    }
-
-    .audio-controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .hint-swipe {
-      text-align: center;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ECEEEF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Repaso HSK">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Repaso HSK · 听力</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Noto+Serif:wght@400;600&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ECEEEF; --sheet:#FAFAF8; --ink:#1A1D21; --mute:#667078; --line:#C7CCD1; --guide:#D3D7DB;
+  --t1:#C62828; --t2:#E3A000; --t3:#2E8B4F; --t4:#1F5FBF; --t0:#111;
+  --serif:'Newsreader','Noto Serif',Georgia,serif; --han:'Noto Serif SC','PingFang SC','Songti SC',serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:17px/1.45 var(--serif);-webkit-text-size-adjust:100%;touch-action:manipulation;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+.app{max-width:760px;margin:0 auto;padding:10px 16px 0;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--ink);padding-bottom:8px}
+h1{font-size:1.25rem;font-weight:500;margin:0}
+h1 span{font-style:italic;color:var(--mute);font-weight:400}
+.link{background:none;border:none;font:inherit;font-size:.95rem;color:var(--mute);text-decoration:underline;cursor:pointer;padding:8px 0 8px 12px}
+.legend{display:flex;gap:12px;font-size:.82rem;color:var(--mute);margin:8px 0 12px;flex-wrap:wrap}
+.legend i{font-family:var(--han);font-style:normal;font-weight:700;font-size:1rem;margin-right:2px}
+.t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}.t0{color:var(--t0)}
+#modes{display:grid;grid-template-columns:1fr 1fr;margin-bottom:10px}
+.chip{font:inherit;font-size:1rem;background:transparent;border:1px solid var(--line);color:var(--mute);min-height:46px;padding:8px;cursor:pointer;border-radius:0}
+#modes .chip:first-child{border-radius:2px 0 0 2px}#modes .chip:last-child{border-radius:0 2px 2px 0;border-left:0}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.sels{display:flex;gap:10px;margin-bottom:12px}
+select{flex:1;min-width:0;height:46px;font:inherit;font-size:16px;color:var(--ink);background:var(--sheet) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23667078' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border:1px solid var(--line);border-radius:2px;padding:0 32px 0 12px;-webkit-appearance:none;appearance:none}
+select:disabled{opacity:.5}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.stats{font-size:.85rem;color:var(--mute);margin-bottom:10px}
+.pbar{display:flex;height:5px;background:var(--guide);margin-bottom:6px}
+.pbar b{display:block;height:100%}
+.opts{background:var(--sheet);border:1px solid var(--line);padding:6px 14px;margin-bottom:10px}
+.opts[hidden]{display:none}
+.opts label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:.98rem}
+.opts input{width:22px;height:22px;accent-color:var(--ink)}
+.opts .link{padding-left:0}
+.sheet{flex:1;background:var(--sheet);border:1px solid var(--line);padding:22px 14px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:340px}
+.cells{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap}
+.cell{width:var(--s,140px);height:var(--s,140px);border:1px solid var(--mute);display:grid;place-items:center;
+  font:700 calc(var(--s,140px)*.68)/1 var(--han);
+  background:
+   linear-gradient(to right,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0),
+   linear-gradient(to bottom,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0),
+   linear-gradient(to top right,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0),
+   linear-gradient(to bottom right,transparent calc(50% - .5px),var(--guide) 0,var(--guide) calc(50% + .5px),transparent 0)}
+.extra{font-family:var(--han);font-size:1.3rem;color:var(--mute)}
+#spk{width:68px;height:68px;border-radius:50%;border:1px solid var(--ink);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer;margin:14px 0 4px}
+#spk:active{background:var(--ink);color:var(--sheet)}
+#spk[hidden]{display:none}
+.reveal{min-height:84px}
+.reveal .py{font-size:2rem;line-height:1.2}
+.reveal .mn{font-style:italic;color:var(--mute)}
+.reveal .meta{font-size:.82rem;color:var(--mute);margin-top:6px}
+.hint{color:var(--mute);font-style:italic;padding:6px 8px}
+.msg{color:var(--t1);font-size:.88rem;min-height:1.3em}
+.swipe,.keys{font-size:.78rem;color:var(--mute);margin-top:4px}
+.swipe{display:none}
+@media(hover:none){.keys{display:none}.swipe{display:block}}
+.bottom{position:sticky;bottom:0;background:var(--paper);padding:12px 0 calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px}
+.btn{flex:1;font:inherit;font-size:1.05rem;min-height:56px;padding:0 14px;border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;border-radius:2px}
+.btn.primary{background:var(--ink);color:var(--sheet)}
+.btn:active{opacity:.8}
+@media(max-width:380px){.reveal .py{font-size:1.7rem}}
+@media(prefers-reduced-motion:no-preference){.reveal>*{animation:f .25s ease-out}@keyframes f{from{opacity:0}}}
+</style>
 </head>
 <body>
-
-  <!-- Encabezado con Botón de Configuración -->
+<div class="app">
   <header>
-    <div id="mode-title" style="font-weight: bold;">听力 (Escucha)</div>
-    <button class="btn-icon" onclick="toggleModal(true)">⚙️</button>
+    <h1>Repaso HSK <span>听力</span></h1>
+    <button class="link" id="gear" aria-expanded="false">Ajustes</button>
   </header>
-
-  <!-- Principal: Área de Estudio -->
-  <main>
-    <div class="card-container" id="card-container">
-      <div class="card" id="card">
-        <span class="tag-course" id="card-course">--</span>
-        
-        <div class="mizige">
-          <div id="hanzi-container" class="hanzi-display">
-            <span class="hidden-placeholder">?</span>
-          </div>
-        </div>
-
-        <div class="card-info">
-          <div id="pinyin-display" class="pinyin" style="visibility: hidden;">--</div>
-          <div id="meaning-display" class="meaning" style="visibility: hidden;">--</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Barra de Controles Táctiles -->
-    <div class="action-bar">
-      <!-- Botón inicial de Revelar -->
-      <button id="btn-reveal" class="btn btn-reveal" onclick="revealCard()">
-        👁️ Mostrar Respuesta
-      </button>
-
-      <!-- Botones de Audio e Interacción rápida -->
-      <div class="audio-controls">
-        <button class="btn btn-secondary" onclick="playAudio(1.0)">🔊 Audio</button>
-        <button class="btn btn-secondary" onclick="playAudio(0.75)">🐢 Lento (0.75x)</button>
-      </div>
-
-      <!-- Botones Acerté / Fallé (ocultos hasta revelar) -->
-      <div id="feedback-buttons" class="btn-group" style="display: none;">
-        <button class="btn btn-fail" onclick="answer(false)">❌ Fallé</button>
-        <button class="btn btn-success" onclick="answer(true)">✅ Acerté</button>
-      </div>
-
-      <div class="hint-swipe">💡 Puedes deslizar ⬅️ Fallé | Acerté ➡️</div>
-    </div>
-  </main>
-
-  <!-- Modal de Ajustes (Selección de Curso y Tema) -->
-  <div class="modal" id="modal-settings">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Ajustes y Filtros</h2>
-        <button class="btn-icon" onclick="toggleModal(false)">✕</button>
-      </div>
-
-      <div class="form-group">
-        <label>Modo de Estudio</label>
-        <div class="segmented-control">
-          <button id="mode-tingli" class="segmented-btn active" onclick="setMode('tingli')">听力 (Escucha)</button>
-          <button id="mode-kouyu" class="segmented-btn" onclick="setMode('kouyu')">口语 (Pronunciación)</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Curso</label>
-        <select id="select-course" onchange="onCourseChange()">
-          <option value="HSK1">1.º Curso (HSK1.json)</option>
-          <option value="HSK2">2.º Curso (HSK2.json)</option>
-          <option value="HSK3_1">3.º Curso (HSK3_1.json)</option>
-          <option value="HSK3_2">4.º Curso (HSK3_2.json)</option>
-          <option value="HSK4_1">5.º Curso (HSK4_1.json)</option>
-          <option value="HSK4_2">6.º Curso (HSK4_2.json)</option>
-          <option value="HSK4_3">7.º Curso (HSK4_3.json)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Tema / Lección</label>
-        <select id="select-topic" onchange="onTopicChange()">
-          <option value="ALL">Todos los temas</option>
-        </select>
-      </div>
-
-      <button class="btn btn-reveal" style="width: 100%;" onclick="toggleModal(false)">Aplicar y Repasar</button>
-    </div>
+  <div class="legend" aria-label="Código de tonos">
+    <span><i class="t1">一</i>1.º</span><span><i class="t2">二</i>2.º</span><span><i class="t3">三</i>3.º</span><span><i class="t4">四</i>4.º</span><span><i class="t0">五</i>neutro</span>
   </div>
+  <div class="opts" id="opts" hidden>
+    <label><input type="checkbox" id="slow"> Audio lento (0,75×)</label>
+    <label><input type="checkbox" id="auto"> Audio al revelar (modo pronunciación)</label>
+    <button class="link" id="reset">Borrar todo el progreso</button>
+  </div>
+  <div id="modes" role="group" aria-label="Modo"></div>
+  <div class="sels">
+    <select id="selCourse" aria-label="Curso"></select>
+    <select id="selTema" aria-label="Tema"></select>
+  </div>
+  <div class="stats"><div class="pbar" id="bar"></div><div id="statsTxt"></div></div>
+  <main class="sheet" id="card" aria-live="polite">
+    <div class="cells" id="cells"></div>
+    <button id="spk" aria-label="Escuchar" hidden>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+    </button>
+    <div class="reveal" id="reveal"></div>
+    <div class="msg" id="msg"></div>
+    <div class="swipe">Desliza ← fallé · acerté →</div>
+    <div class="keys">Atajos: Espacio revelar / repetir · R audio · 1 o ← fallé · 2 o → acerté</div>
+  </main>
+  <div class="bottom" id="actions"></div>
+</div>
 
-  <script>
-    // --- Estado Global ---
-    let currentMode = 'tingli'; // 'tingli' (Escucha) o 'kouyu' (Pronunciación)
-    let currentCourse = 'HSK1';
-    let currentTopic = 'ALL';
-    
-    let vocabulary = [];
-    let currentWord = null;
-    let isRevealed = false;
-    let audioObject = null;
+<script>
+const COURSES=[['HSK1','1.º curso'],['HSK2','2.º curso'],['HSK3_1','3.º curso'],['HSK3_2','4.º curso'],['HSK4_1','5.º curso'],['HSK4_2','6.º curso'],['HSK4_3','7.º curso']];
+const LABEL=Object.fromEntries(COURSES);
+const REAL=['HSK1','HSK2','HSK3','HSK4','HSK5','HSK6'];
+const MODES=[['listen','Escucha · 听力'],['speak','Pronunciación · 口语']];
+const STORE='hsk-repaso-v3';
+const TONE_CLS={0:'t0',1:'t1',2:'t2',3:'t3',4:'t4'};
+const HAN=/[\u3400-\u9fff]/;
+const $=id=>document.getElementById(id);
+const jget=k=>{try{return JSON.parse(localStorage.getItem(k)||'{}')}catch(e){return{}}};
 
-    // Persistencia / Progreso (Leitner Boxes)
-    let progressData = JSON.parse(localStorage.getItem('hsk_progress_v2') || '{}');
+let words=[],byKey={};
+const old=jget('hsk-repaso-v2');
+let S=Object.assign({mode:'listen',course:'HSK1',tema:'all',cur:null,rev:false,prog:old.prog||{listen:{},speak:{}},hist:[],auto:true,slow:false},jget(STORE));
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}};
+const P=()=>S.prog[S.mode];
 
-    // Mapeo de Tonos Pinyin -> Colores
-    const toneRegexMap = [
-      { tone: 1, regex: /[āēīōūǖĀĒĪŌŪǕ]/ },
-      { tone: 2, regex: /[áéíóúǘÁÉÍÓÚǗ]/ },
-      { tone: 3, regex: /[ǎěǐǒǔǚǍĚǏǑǓǙ]/ },
-      { tone: 4, regex: /[àèìòùǜÀÈÌÒÙǛ]/ }
-    ];
-
-    // Carga inicial
-    window.onload = () => {
-      loadStateFromStorage();
-      loadCourseData(currentCourse);
-      setupSwipeEvents();
-    };
-
-    function toggleModal(show) {
-      document.getElementById('modal-settings').classList.toggle('open', show);
-    }
-
-    function setMode(mode) {
-      currentMode = mode;
-      document.getElementById('mode-tingli').classList.toggle('active', mode === 'tingli');
-      document.getElementById('mode-kouyu').classList.toggle('active', mode === 'kouyu');
-      document.getElementById('mode-title').innerText = mode === 'tingli' ? '听力 (Escucha)' : '口语 (Pronunciación)';
-      saveStateToStorage();
-      nextCard();
-    }
-
-    function loadStateFromStorage() {
-      const saved = JSON.parse(localStorage.getItem('hsk_app_settings') || '{}');
-      if (saved.course) currentCourse = saved.course;
-      if (saved.mode) currentMode = saved.mode;
-      if (saved.topic) currentTopic = saved.topic;
-
-      document.getElementById('select-course').value = currentCourse;
-      setMode(currentMode);
-    }
-
-    function saveStateToStorage() {
-      localStorage.setItem('hsk_app_settings', JSON.stringify({
-        course: currentCourse,
-        mode: currentMode,
-        topic: currentTopic
-      }));
-    }
-
-    // Cargar JSON de datos según el Curso
-    async function loadCourseData(courseKey) {
-      try {
-        const response = await fetch(`data/${courseKey}.json`);
-        if (!response.ok) throw new Error("No se pudo cargar el archivo data/" + courseKey + ".json");
-        const data = await response.json();
-        
-        vocabulary = Array.isArray(data) ? data : (data.words || data.vocabulario || []);
-
-        populateTopicsSelect();
-        nextCard();
-      } catch (err) {
-        alert("Error cargando los datos del curso. Asegúrate de servir la app mediante servidor web local (ej. python3 -m http.server): " + err.message);
+/* ---------- datos ---------- */
+async function load(){
+  for(const [f] of COURSES){
+    try{
+      const r=await fetch(`data/${f}.json`); if(!r.ok) continue;
+      for(const w of await r.json()){
+        w.level=w.level||f.slice(0,4); w.key=w.hanzi+'|'+w.pinyin;
+        const ref={f,tema:String(w.tema??'').trim()};
+        if(byKey[w.key]) byKey[w.key].refs.push(ref); else{w.refs=[ref];byKey[w.key]=w;words.push(w)}
       }
+    }catch(e){}
+  }
+  if(!words.length){$('cells').innerHTML='<p class="extra">No se pudieron cargar los datos.<br>Comprueba la carpeta <b>data/</b> y que abres la app desde un servidor.</p>';return}
+  if(S.course!=='all'&&!words.some(w=>w.refs.some(r=>r.f===S.course)))S.course='all';
+  if(S.tema!=='all'&&!temasOf(S.course).some(t=>t[0]===S.tema))S.tema='all';
+  $('auto').checked=S.auto;$('slow').checked=S.slow;
+  drawModes();drawSelects();
+  if(!(S.cur&&byKey[S.cur]&&inSel(byKey[S.cur])))next(false);
+  render();
+}
+const inSel=w=>w.refs.some(r=>(S.course==='all'||r.f===S.course)&&(S.tema==='all'||r.tema===S.tema));
+function temasOf(c){
+  const m={};words.forEach(w=>w.refs.forEach(r=>{if(r.f===c)m[r.tema]=(m[r.tema]||0)+1}));
+  return Object.entries(m).sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}));
+}
+
+/* ---------- tonos ---------- */
+function tones(py){
+  return py.trim().split(/\s+/).map(s=>{
+    const d=s.normalize('NFD');
+    return d.includes('\u0304')?1:d.includes('\u0301')?2:d.includes('\u030C')?3:d.includes('\u0300')?4:0;
+  });
+}
+
+/* ---------- selección con refuerzo ---------- */
+const pool=()=>words.filter(inSel);
+const box=k=>P()[k]?P()[k].b:-1;
+const WEIGHT={'-1':6,0:9,1:4,2:2,3:1,4:.3};
+function next(doRender=true){
+  let p=pool();const recent=S.hist.slice(-3);
+  if(p.length>4)p=p.filter(w=>!recent.includes(w.key));
+  const ws=p.map(w=>WEIGHT[box(w.key)]);let r=Math.random()*ws.reduce((a,b)=>a+b,0),i=0;
+  while(i<p.length-1&&(r-=ws[i])>0)i++;
+  S.cur=p[i].key;S.rev=false;S.hist=[...S.hist,S.cur].slice(-6);save();
+  if(doRender){render();if(S.mode==='listen')play()}
+}
+function mark(ok){
+  if(!S.rev)return;
+  const k=S.cur,p=P()[k]||(P()[k]={b:0,n:0,f:0});
+  p.n++;if(ok)p.b=Math.min(4,p.b+1);else{p.b=0;p.f++}
+  next();
+}
+
+/* ---------- audio (un único elemento, desbloqueado en el primer toque: necesario en iOS) ---------- */
+const au=new Audio();let playId=0,unlocked=false;
+function unlock(){
+  if(unlocked)return;unlocked=true;
+  au.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+  au.play().then(()=>au.pause()).catch(()=>{});
+}
+addEventListener('touchend',unlock,{once:true,passive:true});addEventListener('click',unlock,{once:true});
+const audioOk={};
+function candidates(w){
+  const h=w.hanzi,names=[...new Set([h,h.replace(/[()（）]/g,''),h.replace(/[()（）\s]/g,''),h.replace(/\([^)]*\)/g,'').replace(/\s/g,'')])];
+  const folders=[...new Set([w.level,...w.refs.map(r=>r.f.slice(0,4)),...REAL])];
+  return folders.flatMap(f=>names.map(n=>`audios/${f}/${encodeURIComponent(n)}.mp3`));
+}
+async function play(){
+  const w=byKey[S.cur];if(!w)return;
+  const id=++playId;$('msg').textContent='';au.pause();
+  for(const u of audioOk[w.key]?[audioOk[w.key]]:candidates(w)){
+    if(id!==playId)return;
+    au.src=u;au.defaultPlaybackRate=au.playbackRate=S.slow?.75:1;
+    try{await au.play();audioOk[w.key]=u;return}
+    catch(e){
+      if(id!==playId)return;
+      if(e.name==='NotAllowedError'){$('msg').textContent='Toca el altavoz para escuchar.';return}
     }
+  }
+  if(id===playId)$('msg').textContent=`Audio no encontrado: audios/${w.level}/${w.hanzi}.mp3`;
+}
 
-    function populateTopicsSelect() {
-      const selectTopic = document.getElementById('select-topic');
-      selectTopic.innerHTML = '<option value="ALL">Todos los temas</option>';
+/* ---------- interfaz ---------- */
+function drawModes(){
+  const el=$('modes');el.innerHTML='';
+  MODES.forEach(([m,l])=>{
+    const b=document.createElement('button');b.className='chip';b.textContent=l;b.setAttribute('aria-pressed',S.mode===m);
+    b.onclick=()=>{S.mode=m;drawModes();next()};el.appendChild(b);
+  });
+}
+function drawSelects(){
+  const cs=COURSES.filter(([f])=>words.some(w=>w.refs.some(r=>r.f===f)));
+  $('selCourse').innerHTML=`<option value="all">Todos los cursos (${words.length})</option>`+cs.map(([f,l])=>`<option value="${f}">${l} (${words.filter(w=>w.refs.some(r=>r.f===f)).length})</option>`).join('');
+  $('selCourse').value=S.course;
+  const ts=S.course==='all'?[]:temasOf(S.course);
+  $('selTema').innerHTML='<option value="all">Todos los temas</option>'+ts.map(([t,n])=>`<option value="${t}">${t?'Tema '+t:'Sin tema'} (${n})</option>`).join('');
+  $('selTema').value=S.tema;$('selTema').disabled=S.course==='all';
+}
+function filterChanged(){drawSelects();if(!inSel(byKey[S.cur]))next();else{render();save()}}
+$('selCourse').onchange=e=>{S.course=e.target.value;S.tema='all';filterChanged()};
+$('selTema').onchange=e=>{S.tema=e.target.value;filterChanged()};
 
-      // Extraer temas/lecciones únicas si existen en el JSON
-      const topics = new Set();
-      vocabulary.forEach(item => {
-        if (item.topic) topics.add(item.topic);
-        else if (item.tema) topics.add(item.tema);
-        else if (item.lesson) topics.add(item.lesson);
-      });
+function render(){
+  const w=byKey[S.cur];if(!w)return;
+  const listen=S.mode==='listen',hide=listen&&!S.rev;
+  const chars=[...w.hanzi],tn=tones(w.pinyin),han=chars.filter(c=>HAN.test(c)).length;
+  const avail=Math.min(innerWidth,760)-32-28-8;
+  const s=hide?120:Math.max(52,Math.min(140,Math.floor(avail/han)-6));
+  $('cells').style.setProperty('--s',s+'px');
+  let ti=0;
+  $('cells').innerHTML=hide?'<div class="cell" style="color:var(--guide)">?</div>':chars.map(c=>HAN.test(c)?`<div class="cell ${TONE_CLS[tn[ti++]??0]}">${c}</div>`:`<span class="extra">${c}</span>`).join('');
+  $('spk').hidden=!(listen||S.rev);$('msg').textContent='';
+  if(S.rev){
+    const where=w.refs.map(r=>LABEL[r.f]+(r.tema?' · tema '+r.tema:'')).join(' / ');
+    $('reveal').innerHTML=`<div class="py">${w.pinyin}</div><div class="mn">${w.meaning}</div><div class="meta">${w.level} · ${where}</div>`;
+    $('actions').innerHTML=`<button class="btn" id="bF">✕ Fallé</button><button class="btn primary" id="bO">✓ Acerté</button>`;
+    $('bF').onclick=()=>mark(false);$('bO').onclick=()=>mark(true);
+  }else{
+    $('reveal').innerHTML=`<div class="hint">${listen?'Escucha. ¿Qué palabra es, cómo se escribe y qué significa?':'Pronúncialo en voz alta y comprueba.'}</div>`;
+    $('actions').innerHTML=`<button class="btn primary" id="bS">${listen?'Mostrar respuesta':'Mostrar y escuchar'}</button>`;
+    $('bS').onclick=reveal;
+  }
+  stats();
+}
+function reveal(){S.rev=true;save();render();if(S.mode==='speak'&&S.auto)play()}
+function stats(){
+  const p=pool(),c={n:0,f:0,l:0,d:0};
+  p.forEach(w=>{const b=box(w.key);if(b<0)c.n++;else if(b===0)c.f++;else if(b===4)c.d++;else c.l++});
+  const pc=x=>(100*x/p.length).toFixed(1)+'%';
+  $('bar').innerHTML=`<b style="width:${pc(c.d)};background:var(--ink)"></b><b style="width:${pc(c.l)};background:var(--mute)"></b><b style="width:${pc(c.f)};background:var(--t1)"></b>`;
+  $('statsTxt').textContent=`Dominadas ${c.d} · En repaso ${c.l} · Fallos ${c.f} · Sin ver ${c.n} (de ${p.length})`;
+}
 
-      topics.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t;
-        opt.textContent = t;
-        selectTopic.appendChild(opt);
-      });
-
-      selectTopic.value = currentTopic;
-    }
-
-    function onCourseChange() {
-      currentCourse = document.getElementById('select-course').value;
-      currentTopic = 'ALL';
-      saveStateToStorage();
-      loadCourseData(currentCourse);
-    }
-
-    function onTopicChange() {
-      currentTopic = document.getElementById('select-topic').value;
-      saveStateToStorage();
-      nextCard();
-    }
-
-    // Algoritmo de selección ponderado según la caja de dominio
-    function getFilteredVocabulary() {
-      return vocabulary.filter(item => {
-        if (currentTopic === 'ALL') return true;
-        return (item.topic === currentTopic || item.tema === currentTopic || item.lesson === currentTopic);
-      });
-    }
-
-    function nextCard() {
-      const pool = getFilteredVocabulary();
-      if (pool.length === 0) {
-        alert("No hay palabras disponibles para los filtros seleccionados.");
-        return;
-      }
-
-      // Elegir palabra aleatoria con peso basado en errores (Caja Leitner 0 a 5)
-      const weights = pool.map(word => {
-        const key = `${currentMode}_${word.hanzi || word.word}`;
-        const box = progressData[key] || 0;
-        return Math.max(1, 6 - box); // Mayor peso a menor nivel de dominio
-      });
-
-      const totalWeight = weights.reduce((a, b) => a + b, 0);
-      let random = Math.random() * totalWeight;
-      let selectedIndex = 0;
-
-      for (let i = 0; i < weights.length; i++) {
-        if (random < weights[i]) {
-          selectedIndex = i;
-          break;
-        }
-        random -= weights[i];
-      }
-
-      currentWord = pool[selectedIndex];
-      isRevealed = false;
-      renderCard();
-
-      if (currentMode === 'tingli') {
-        playAudio(1.0);
-      }
-    }
-
-    function getToneClass(pinyinSyllable) {
-      for (const t of toneRegexMap) {
-        if (t.regex.test(pinyinSyllable)) return `tone-${t.tone}`;
-      }
-      return 'tone-0';
-    }
-
-    function renderColoredHanzi(hanzi, pinyin) {
-      if (!hanzi) return '';
-      const chars = hanzi.split('');
-      const pinyinSyllables = pinyin ? pinyin.split(' ') : [];
-
-      return chars.map((char, i) => {
-        const syllable = pinyinSyllables[i] || '';
-        const toneClass = getToneClass(syllable);
-        return `<span class="${toneClass}">${char}</span>`;
-      }).join('');
-    }
-
-    function renderCard() {
-      const hanziContainer = document.getElementById('hanzi-container');
-      const pinyinDisplay = document.getElementById('pinyin-display');
-      const meaningDisplay = document.getElementById('meaning-display');
-      const courseTag = document.getElementById('card-course');
-
-      const wordStr = currentWord.hanzi || currentWord.word;
-      const pinyinStr = currentWord.pinyin || '';
-      const meaningStr = currentWord.meaning || currentWord.spanish || currentWord.significado || '';
-
-      courseTag.innerText = currentWord.level || currentCourse;
-      pinyinDisplay.innerText = pinyinStr;
-      meaningDisplay.innerText = meaningStr;
-
-      if (currentMode === 'tingli') {
-        // En escucha: Ocultamos el hanzi hasta revelar
-        hanziContainer.innerHTML = isRevealed ? renderColoredHanzi(wordStr, pinyinStr) : '<span class="hidden-placeholder">?</span>';
-      } else {
-        // En pronunciación: Mostramos el hanzi desde el inicio
-        hanziContainer.innerHTML = renderColoredHanzi(wordStr, pinyinStr);
-      }
-
-      pinyinDisplay.style.visibility = isRevealed ? 'visible' : 'hidden';
-      meaningDisplay.style.visibility = isRevealed ? 'visible' : 'hidden';
-
-      document.getElementById('btn-reveal').style.display = isRevealed ? 'none' : 'flex';
-      document.getElementById('feedback-buttons').style.display = isRevealed ? 'flex' : 'none';
-    }
-
-    function revealCard() {
-      isRevealed = true;
-      renderCard();
-      if (currentMode === 'kouyu') {
-        playAudio(1.0);
-      }
-    }
-
-    function playAudio(speed = 1.0) {
-      if (!currentWord) return;
-      const hanziStr = currentWord.hanzi || currentWord.word;
-      const cleanHanzi = hanziStr.replace(/\(.*?\)/g, ''); // Quitar paréntesis
-      const level = currentWord.level || currentCourse;
-
-      const audioPath = `audios/${level}/${cleanHanzi}.mp3`;
-
-      if (audioObject) {
-        audioObject.pause();
-      }
-
-      audioObject = new Audio(audioPath);
-      audioObject.playbackRate = speed;
-      audioObject.play().catch(e => {
-        console.warn("No se pudo auto-reproducir el audio:", e);
-      });
-    }
-
-    function answer(isCorrect) {
-      if (!currentWord) return;
-      const key = `${currentMode}_${currentWord.hanzi || currentWord.word}`;
-      let currentBox = progressData[key] || 0;
-
-      if (isCorrect) {
-        progressData[key] = Math.min(5, currentBox + 1);
-      } else {
-        progressData[key] = 0; // Reiniciar a 0 en fallo
-      }
-
-      localStorage.setItem('hsk_progress_v2', JSON.stringify(progressData));
-      nextCard();
-    }
-
-    // --- Soporte de Gestos Táctiles (Swipe) ---
-    function setupSwipeEvents() {
-      const cardContainer = document.getElementById('card-container');
-      let touchStartX = 0;
-      let touchStartY = 0;
-
-      cardContainer.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-      }, { passive: true });
-
-      cardContainer.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].screenX;
-        const touchEndY = e.changedTouches[0].screenY;
-        handleSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
-      }, { passive: true });
-    }
-
-    function handleSwipe(startX, startY, endX, endY) {
-      const diffX = endX - startX;
-      const diffY = endY - startY;
-
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
-        if (!isRevealed) {
-          revealCard();
-          return;
-        }
-        if (diffX > 0) {
-          // Swipe Derecha -> Acerté
-          answer(true);
-        } else {
-          // Swipe Izquierda -> Fallé
-          answer(false);
-        }
-      }
-    }
-  </script>
+/* ---------- eventos ---------- */
+$('spk').onclick=play;
+$('gear').onclick=()=>{const o=$('opts');o.hidden=!o.hidden;$('gear').setAttribute('aria-expanded',!o.hidden)};
+$('auto').onchange=e=>{S.auto=e.target.checked;save()};
+$('slow').onchange=e=>{S.slow=e.target.checked;save()};
+$('reset').onclick=()=>{if(confirm('¿Borrar todo el progreso guardado?')){S.prog={listen:{},speak:{}};S.hist=[];next()}};
+document.addEventListener('keydown',e=>{
+  if(['INPUT','SELECT'].includes(e.target.tagName)||e.metaKey||e.ctrlKey)return;
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();S.rev?play():reveal()}
+  else if(e.key==='1'||e.key==='ArrowLeft')mark(false);
+  else if(e.key==='2'||e.key==='ArrowRight')mark(true);
+  else if(e.key==='r'||e.key==='R')play();
+});
+let tx=null,ty=null;
+$('card').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+$('card').addEventListener('touchend',e=>{
+  if(tx==null||!S.rev)return;
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;tx=null;
+  if(Math.abs(dx)>90&&Math.abs(dy)<60)mark(dx>0);
+},{passive:true});
+addEventListener('resize',()=>words.length&&render());
+load();
+</script>
 </body>
 </html>
