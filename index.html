@@ -225,20 +225,24 @@ const WEIGHT={'-1':6,0:9,1:4,2:2,3:1,4:.3};
 function next(doRender=true){
   let p=pool();const recent=S.hist.slice(-3);
   if(p.length>4)p=p.filter(w=>!recent.includes(w.key));
-  const ws=p.map(w=>WEIGHT[box(w.key)]);let r=Math.random()*ws.reduce((a,b)=>a+b,0),i=0;
+  const hard=k=>P()[k]?P()[k].h||0:0;
+  const ws=p.map(w=>WEIGHT[box(w.key)]*(1+.5*hard(w.key)));let r=Math.random()*ws.reduce((a,b)=>a+b,0),i=0;
   while(i<p.length-1&&(r-=ws[i])>0)i++;
-  S.cur=p[i].key;S.rev=false;S.hist=[...S.hist,S.cur].slice(-6);save();
+  S.cur=p[i].key;S.rev=false;plays=0;S.hist=[...S.hist,S.cur].slice(-6);save();
   if(doRender){render();if(S.mode==='listen')play()}
 }
 function mark(ok){
   if(!S.rev)return;
   const k=S.cur,p=P()[k]||(P()[k]={b:0,n:0,f:0});
   p.n++;if(ok)p.b=Math.min(4,p.b+1);else{p.b=0;p.f++}
+  if(Math.max(0,plays-1)>=REPLAY_MIN)p.h=Math.min(4,(p.h||0)+1);   // hubo que oírla repetida
+  else if(ok&&p.h)p.h--;                                         // acertada sin repetir: se «enfría»
   next();
 }
 
 /* ---------- audio (un único elemento, desbloqueado en el primer toque: necesario en iOS) ---------- */
-const au=new Audio();let playId=0,unlocked=false;
+const au=new Audio();let playId=0,unlocked=false,plays=0;
+const REPLAY_MIN=2; // repeticiones manuales a partir de las cuales la palabra se considera «dura»
 function unlock(){
   if(unlocked)return;unlocked=true;
   au.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
@@ -257,7 +261,7 @@ async function play(){
   for(const u of audioOk[w.key]?[audioOk[w.key]]:candidates(w)){
     if(id!==playId)return;
     au.src=u;au.defaultPlaybackRate=au.playbackRate=S.slow?.75:1;
-    try{await au.play();audioOk[w.key]=u;return}
+    try{await au.play();audioOk[w.key]=u;if(id===playId)plays++;return}
     catch(e){
       if(id!==playId)return;
       if(e.name==='NotAllowedError'){$('msg').textContent='Toca el altavoz para escuchar.';return}
