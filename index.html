@@ -31,9 +31,9 @@ h1 span{font-style:italic;color:var(--mute);font-weight:400}
 .legend span{font-weight:600;white-space:nowrap}
 .legend b{font:700 1.1rem var(--han);margin-left:1px}
 .t1{color:var(--t1)}.t2{color:var(--t2)}.t3{color:var(--t3)}.t4{color:var(--t4)}.t0{color:var(--t0)}
-#modes{display:grid;grid-template-columns:1fr 1fr;margin-bottom:10px}
+#modes,#authTabs{display:grid;grid-template-columns:1fr 1fr;margin-bottom:10px}
 .chip{font:inherit;font-size:1rem;background:transparent;border:1px solid var(--line);color:var(--mute);min-height:46px;padding:8px;cursor:pointer;border-radius:0}
-#modes .chip:first-child{border-radius:2px 0 0 2px}#modes .chip:last-child{border-radius:0 2px 2px 0;border-left:0}
+#modes .chip:first-child,#authTabs .chip:first-child{border-radius:2px 0 0 2px}#modes .chip:last-child,#authTabs .chip:last-child{border-radius:0 2px 2px 0;border-left:0}
 .chip[aria-pressed=true]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
 .sels{display:flex;gap:10px;margin-bottom:12px}
 select{flex:1;min-width:0;height:46px;font:inherit;font-size:16px;color:var(--ink);background:var(--sheet) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23667078' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center;
@@ -47,7 +47,26 @@ select:disabled{opacity:.5}
 .opts[hidden]{display:none}
 .opts label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:.98rem}
 .opts input{width:22px;height:22px;accent-color:var(--ink)}
-.opts .link{padding-left:0}
+.opts .link{display:block;padding:10px 0}
+.hr{display:flex;align-items:baseline;gap:4px;min-width:0}
+.who{font-style:italic;color:var(--mute);font-size:.92rem;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth{position:fixed;inset:0;z-index:20;background:var(--paper);overflow:auto;padding:calc(28px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom))}
+.auth[hidden]{display:none}
+.authbox{max-width:380px;margin:5vh auto 0}
+.authbox h1{font-size:1.7rem;margin-bottom:6px}
+.authbox>p{color:var(--mute);margin:0 0 22px;font-style:italic}
+.auth label.f{display:block;font-size:.85rem;color:var(--mute);margin:0 0 4px}
+.auth input[type=text],.auth input[type=password],.auth select{display:block;width:100%;height:48px;font:inherit;font-size:16px;color:var(--ink);background-color:var(--sheet);border:1px solid var(--line);border-radius:2px;padding:0 12px;margin-bottom:14px}
+.auth select{padding-right:32px}
+.chk{display:flex;gap:10px;align-items:center;min-height:44px;font-size:.95rem}
+.chk input{width:22px;height:22px;accent-color:var(--ink)}
+.chk[hidden]{display:none}
+.sync{font-size:.82rem;color:var(--mute);padding:2px 0}
+.load{text-align:center}
+.fgt{padding:12px 0 0;font-size:.9rem}
+.auth [hidden]{display:none!important}
+#authMsg{color:var(--t1);min-height:1.5em;font-size:.92rem;margin:6px 0}
+.auth .btn{width:100%;flex:none}
 .sheet{touch-action:pan-y;will-change:transform;flex:1;background:var(--sheet);border:1px solid var(--line);padding:22px 14px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:340px}
 .cells{display:flex;gap:4px;justify-content:center;align-items:center;flex-wrap:nowrap;width:100%}
 .cell{flex:none;width:var(--s,140px);height:var(--s,140px);border:1px solid var(--mute);display:grid;place-items:center;
@@ -81,10 +100,36 @@ select:disabled{opacity:.5}
 </style>
 </head>
 <body>
+<div class="auth" id="auth">
+  <div class="authbox">
+    <h1>Repaso HSK <span>听力</span></h1>
+    <p>Entra con tu cuenta y continúa donde lo dejaste, desde cualquier dispositivo.</p>
+    <p class="load" id="authLoad">Cargando…</p>
+    <div id="authForms" hidden>
+      <div id="authTabs" role="group"><button class="chip" data-t="login" type="button">Entrar</button><button class="chip" data-t="new" type="button">Crear cuenta</button></div>
+      <form id="fLogin" autocomplete="on">
+        <label class="f" for="loginEmail">Correo electrónico</label><input type="email" id="loginEmail" autocomplete="username" autocapitalize="off" autocorrect="off" inputmode="email">
+        <label class="f" for="loginPw">Contraseña</label><input type="password" id="loginPw" autocomplete="current-password">
+        <label class="chk"><input type="checkbox" id="remLogin" checked> Mantener sesión en este dispositivo</label>
+        <button class="btn primary" type="submit">Entrar</button>
+        <button class="link fgt" type="button" id="forgot">¿Has olvidado la contraseña?</button>
+      </form>
+      <form id="fNew" autocomplete="on" hidden>
+        <label class="f" for="newEmail">Correo electrónico</label><input type="email" id="newEmail" autocomplete="username" autocapitalize="off" autocorrect="off" inputmode="email">
+        <label class="f" for="newPw">Contraseña (mínimo 6 caracteres)</label><input type="password" id="newPw" autocomplete="new-password">
+        <label class="f" for="newPw2">Repite la contraseña</label><input type="password" id="newPw2" autocomplete="new-password">
+        <div id="importRow" hidden><label class="f" for="importSrc">Traer el progreso guardado en este dispositivo</label><select id="importSrc"></select></div>
+        <label class="chk"><input type="checkbox" id="remNew" checked> Mantener sesión en este dispositivo</label>
+        <button class="btn primary" type="submit">Crear cuenta</button>
+      </form>
+    </div>
+    <div id="authMsg" role="alert"></div>
+  </div>
+</div>
 <div class="app">
   <header>
     <h1>Repaso HSK <span>听力</span></h1>
-    <button class="link" id="gear" aria-expanded="false">Ajustes</button>
+    <div class="hr"><span class="who" id="who"></span><button class="link" id="gear" aria-expanded="false">Ajustes</button></div>
   </header>
   <div class="legend" aria-label="Código de tonos">
     <span class="t1">mā <b>妈</b></span><span class="t2">má <b>麻</b></span><span class="t3">mǎ <b>马</b></span><span class="t4">mà <b>骂</b></span><span class="t0">ma <b>吗</b></span>
@@ -92,7 +137,10 @@ select:disabled{opacity:.5}
   <div class="opts" id="opts" hidden>
     <label><input type="checkbox" id="slow"> Audio lento (0,75×)</label>
     <label><input type="checkbox" id="auto"> Audio al revelar (modo pronunciación)</label>
-    <button class="link" id="reset">Borrar todo el progreso</button>
+    <div class="sync" id="acct"></div>
+    <div class="sync" id="sync"></div>
+    <button class="link" id="switch">Cerrar sesión</button>
+    <button class="link" id="reset">Borrar mi progreso</button>
   </div>
   <div id="modes" role="group" aria-label="Modo"></div>
   <div class="sels">
@@ -113,25 +161,28 @@ select:disabled{opacity:.5}
   <div class="bottom" id="actions"></div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 const COURSES=[['HSK1','1.º curso'],['HSK2','2.º curso'],['HSK3_1','3.º curso'],['HSK3_2','4.º curso'],['HSK4_1','5.º curso'],['HSK4_2','6.º curso'],['HSK4_3','7.º curso']];
 const LABEL=Object.fromEntries(COURSES);
 const REAL=['HSK1','HSK2','HSK3','HSK4','HSK5','HSK6'];
 const MODES=[['listen','Escucha · 听力'],['speak','Pronunciación · 口语']];
-const STORE='hsk-repaso-v3';
+const LEGACY='hsk-repaso-v3';let STORE=null;
 const TONE_CLS={0:'t0',1:'t1',2:'t2',3:'t3',4:'t4'};
 const HAN=/[\u3400-\u9fff]/;
 const $=id=>document.getElementById(id);
 const jget=k=>{try{return JSON.parse(localStorage.getItem(k)||'{}')}catch(e){return{}}};
 
 let words=[],byKey={};
-const old=jget('hsk-repaso-v2');
-let S=Object.assign({mode:'listen',course:'HSK1',tema:'all',cur:null,rev:false,prog:old.prog||{listen:{},speak:{}},hist:[],auto:true,slow:false},jget(STORE));
-const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}};
+const DEF=()=>({mode:'listen',course:'HSK1',tema:'all',cur:null,rev:false,prog:{listen:{},speak:{}},hist:[],auto:true,slow:false});
+let S=DEF();
+const save=()=>{if(!STORE)return;S.ts=Date.now();try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}schedulePush()};
 const P=()=>S.prog[S.mode];
 
 /* ---------- datos ---------- */
-async function load(){
+async function loadData(){
   for(const [f] of COURSES){
     try{
       const r=await fetch(`data/${f}.json`); if(!r.ok) continue;
@@ -142,10 +193,13 @@ async function load(){
       }
     }catch(e){}
   }
-  if(!words.length){$('cells').innerHTML='<p class="msgbox">No se pudieron cargar los datos.<br>Comprueba la carpeta <b>data/</b> y que abres la app desde un servidor.</p>';return}
+  if(!words.length){$('cells').innerHTML='<p class="msgbox">No se pudieron cargar los datos.<br>Comprueba la carpeta <b>data/</b> y que abres la app desde un servidor.</p>';return false}
+  return true;
+}
+function initUI(){
   if(S.course!=='all'&&!words.some(w=>w.refs.some(r=>r.f===S.course)))S.course='all';
   if(S.tema!=='all'&&!temasOf(S.course).some(t=>t[0]===S.tema))S.tema='all';
-  $('auto').checked=S.auto;$('slow').checked=S.slow;
+  $('auto').checked=S.auto;$('slow').checked=S.slow;$('opts').hidden=true;$('gear').setAttribute('aria-expanded','false');
   drawModes();drawSelects();
   if(!(S.cur&&byKey[S.cur]&&inSel(byKey[S.cur])))next(false);
   render();
@@ -268,9 +322,9 @@ $('spk').onclick=play;
 $('gear').onclick=()=>{const o=$('opts');o.hidden=!o.hidden;$('gear').setAttribute('aria-expanded',!o.hidden)};
 $('auto').onchange=e=>{S.auto=e.target.checked;save()};
 $('slow').onchange=e=>{S.slow=e.target.checked;save()};
-$('reset').onclick=()=>{if(confirm('¿Borrar todo el progreso guardado?')){S.prog={listen:{},speak:{}};S.hist=[];next()}};
+$('reset').onclick=()=>{if(confirm('¿Borrar todo tu progreso? Se borrará también en la nube.')){S.prog={listen:{},speak:{}};S.hist=[];S.rst=Date.now();next()}};
 document.addEventListener('keydown',e=>{
-  if(['INPUT','SELECT'].includes(e.target.tagName)||e.metaKey||e.ctrlKey)return;
+  if(!STORE||['INPUT','SELECT'].includes(e.target.tagName)||e.metaKey||e.ctrlKey)return;
   if(e.key===' '||e.key==='Enter'){e.preventDefault();S.rev?play():reveal()}
   else if(e.key==='1'||e.key==='ArrowLeft')mark(false);
   else if(e.key==='2'||e.key==='ArrowRight')mark(true);
@@ -302,7 +356,107 @@ card.addEventListener('touchend',e=>{
 },{passive:true});
 card.addEventListener('touchcancel',()=>{tx=null;drag=false;resetCard()},{passive:true});
 addEventListener('resize',()=>words.length&&render());
-load();
+
+/* ---------- cuentas (Firebase) y sincronización ---------- */
+const FB={apiKey:"AIzaSyDgUwMXMcH1WIZ4mVpu7wqPb05uwO1ddns",authDomain:"repaso-hsk.firebaseapp.com",projectId:"repaso-hsk",storageBucket:"repaso-hsk.firebasestorage.app",messagingSenderId:"384669499500",appId:"1:384669499500:web:100c15188e727996601849"};
+let auth=null,db=null,uid=null,pending=null,pushT=null,dirty=false;
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const authMsg=(t,ok)=>{$('authMsg').textContent=t||'';$('authMsg').style.color=ok?'var(--ink)':''};
+const setSync=t=>{$('sync').textContent=t};
+const ERR={'auth/email-already-in-use':'Ese correo ya tiene cuenta. Prueba a entrar.','auth/invalid-email':'El correo no es válido.','auth/weak-password':'La contraseña debe tener al menos 6 caracteres.',
+ 'auth/invalid-credential':'Correo o contraseña incorrectos.','auth/wrong-password':'Correo o contraseña incorrectos.','auth/user-not-found':'Correo o contraseña incorrectos.','auth/invalid-login-credentials':'Correo o contraseña incorrectos.',
+ 'auth/missing-password':'Escribe la contraseña.','auth/too-many-requests':'Demasiados intentos. Espera unos minutos.','auth/network-request-failed':'Sin conexión.',
+ 'auth/unauthorized-domain':'Dominio no autorizado: añádelo en Firebase → Authentication → Configuración → Dominios autorizados.','auth/operation-not-allowed':'El acceso con correo no está activado en Firebase.'};
+const errTxt=e=>ERR[e.code]||('Error: '+(e.code||e.message));
+const per=r=>r?firebase.auth.Auth.Persistence.LOCAL:firebase.auth.Auth.Persistence.SESSION;
+
+/* fusión: ajustes del más reciente; progreso por palabra con más intentos; un "borrar" posterior anula lo anterior */
+function merge(a,b){
+  const [x,y]=(a.ts||0)>=(b.ts||0)?[a,b]:[b,a];
+  const out=Object.assign(DEF(),y,x),r=Math.max(a.rst||0,b.rst||0);
+  const pr=o=>(o.rst||0)<r?{}:(o.prog||{});
+  out.prog={listen:{},speak:{}};
+  for(const m of ['listen','speak']){
+    const pa=pr(a)[m]||{},pb=pr(b)[m]||{};
+    for(const k of new Set([...Object.keys(pa),...Object.keys(pb)])){const u=pa[k],v=pb[k];out.prog[m][k]=!u?v:!v?u:(u.n>=v.n?u:v)}
+  }
+  if(r)out.rst=r;
+  return out;
+}
+async function fetchCloud(){
+  const d=await Promise.race([db.collection('progress').doc(uid).get(),new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),6000))]);
+  return d.exists?JSON.parse(d.data().s):null;
+}
+function schedulePush(){if(!uid||!db)return;dirty=true;setSync('Guardando…');clearTimeout(pushT);pushT=setTimeout(push,1500)}
+async function push(){
+  if(!uid||!db||!dirty)return;clearTimeout(pushT);
+  try{await db.collection('progress').doc(uid).set({s:JSON.stringify(S),ts:S.ts||Date.now()});dirty=false;setSync('Sincronizado ✓')}
+  catch(e){setSync('Sin conexión: se guardará al reconectar')}
+}
+addEventListener('online',push);addEventListener('pagehide',push);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')push()});
+
+function sources(){
+  const out=[];
+  if(localStorage.getItem(LEGACY))out.push([LEGACY,'Progreso anterior (sin usuario)']);
+  Object.entries(jget('hsk-users-v1')).forEach(([k,u])=>{const key=LEGACY+':u:'+k;if(localStorage.getItem(key))out.push([key,'Usuario local «'+esc(u.n)+'»'])});
+  return out;
+}
+function setTab(t){
+  document.querySelectorAll('#authTabs .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));
+  $('fLogin').hidden=t!=='login';$('fNew').hidden=t!=='new';authMsg();
+}
+function showAuth(tab){
+  uid=null;STORE=null;S=DEF();dirty=false;clearTimeout(pushT);au.pause();
+  $('authLoad').hidden=true;$('authForms').hidden=false;$('auth').hidden=false;
+  ['loginPw','newPw','newPw2'].forEach(i=>$(i).value='');
+  const src=sources();$('importRow').hidden=!src.length;
+  $('importSrc').innerHTML='<option value="">No traer nada</option>'+src.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');
+  if(src.length)$('importSrc').value=src[0][0];
+  setTab(tab);
+}
+async function enter(user){
+  uid=user.uid;STORE=LEGACY+':fb:'+uid;
+  $('who').textContent=user.email.split('@')[0];$('who').title=user.email;$('acct').textContent=user.email;
+  let local=jget(STORE);
+  if(pending){if(!Object.keys(local).length)local=jget(pending);pending=null}
+  setSync('Sincronizando…');
+  let cloud;try{cloud=await fetchCloud()}catch(e){cloud=undefined}
+  S=merge(local,cloud||{});dirty=true;
+  $('auth').hidden=true;initUI();scrollTo(0,0);
+  try{localStorage.setItem(STORE,JSON.stringify(S))}catch(e){}
+  push();
+}
+document.querySelectorAll('#authTabs .chip').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+$('fLogin').onsubmit=async e=>{
+  e.preventDefault();authMsg();const btn=e.target.querySelector('.btn');btn.disabled=true;
+  try{await auth.setPersistence(per($('remLogin').checked));await auth.signInWithEmailAndPassword($('loginEmail').value.trim(),$('loginPw').value)}
+  catch(err){authMsg(errTxt(err))}
+  btn.disabled=false;
+};
+$('fNew').onsubmit=async e=>{
+  e.preventDefault();authMsg();
+  const em=$('newEmail').value.trim(),pw=$('newPw').value;
+  if(pw.length<6)return authMsg('La contraseña debe tener al menos 6 caracteres.');
+  if(pw!==$('newPw2').value)return authMsg('Las contraseñas no coinciden.');
+  const btn=e.target.querySelector('.btn');btn.disabled=true;
+  pending=$('importRow').hidden?null:($('importSrc').value||null);
+  try{await auth.setPersistence(per($('remNew').checked));await auth.createUserWithEmailAndPassword(em,pw)}
+  catch(err){pending=null;authMsg(errTxt(err))}
+  btn.disabled=false;
+};
+$('forgot').onclick=async()=>{
+  authMsg();const em=$('loginEmail').value.trim();
+  if(!em)return authMsg('Escribe tu correo arriba y vuelve a pulsar.');
+  try{await auth.sendPasswordResetEmail(em);authMsg('Si ese correo tiene cuenta, recibirás un enlace para restablecer la contraseña. Revisa también el spam.',true)}
+  catch(err){authMsg(errTxt(err))}
+};
+$('switch').onclick=async()=>{await push();await auth.signOut()};
+async function boot(){
+  if(!await loadData()){$('auth').hidden=true;return}
+  if(typeof firebase==='undefined'){$('authLoad').textContent='No se pudo cargar el servicio de cuentas. Comprueba tu conexión y recarga.';return}
+  firebase.initializeApp(FB);auth=firebase.auth();db=firebase.firestore();
+  auth.onAuthStateChanged(u=>u?enter(u):showAuth('login'));
+}
+boot();
 </script>
-</body>
-</html>
