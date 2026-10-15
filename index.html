@@ -252,7 +252,7 @@ addEventListener('touchend',unlock,{once:true,passive:true});addEventListener('c
 const audioOk={};
 function candidates(w){
   const h=w.hanzi,names=[...new Set([h,h.replace(/[()（）]/g,''),h.replace(/[()（）\s]/g,''),h.replace(/\([^)]*\)/g,'').replace(/\s/g,'')])];
-  const folders=[...new Set([w.level,...w.refs.map(r=>r.f.slice(0,4)),...REAL])];
+  const folders=[...new Set([...w.refs.map(r=>r.f),String(w.level).replace(/\s+/g,''),w.level,...w.refs.map(r=>r.f.slice(0,4)),...COURSES.map(c=>c[0]),...REAL])];
   return folders.flatMap(f=>names.map(n=>`audios/${f}/${encodeURIComponent(n)}.mp3`));
 }
 async function play(){
@@ -267,7 +267,7 @@ async function play(){
       if(e.name==='NotAllowedError'){$('msg').textContent='Toca el altavoz para escuchar.';return}
     }
   }
-  if(id===playId)$('msg').textContent=`Audio no encontrado: audios/${w.level}/${w.hanzi}.mp3`;
+  if(id===playId){const fl=[...new Set(candidates(w).map(u=>decodeURIComponent(u.split('/')[1])))];$('msg').textContent=`Audio no encontrado: «${w.hanzi}.mp3». Carpetas probadas: ${fl.slice(0,4).join(', ')}…`}
 }
 
 /* ---------- interfaz ---------- */
